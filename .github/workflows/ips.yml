@@ -19,14 +19,11 @@ jobs:
         run: |
           WORKFLOW_FILE="showip.yml"   # 这里改成目标 workflow 文件名
 
-          for i in $(seq 1 100)
-          do
-            echo "Trigger #$i"
-
-            curl -X POST \
-              -H "Authorization: Bearer $GH_TOKEN" \
+          seq 1 100 | xargs -I{} -P 50 bash -c '
+            echo "Trigger #{}"
+            curl -s -o /dev/null -X POST \
+              -H "Authorization: Bearer '$GH_TOKEN'" \
               -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW_FILE/dispatches \
-              -d '{"ref":"main"}'
-
-          done
+              https://api.github.com/repos/'$REPO'/actions/workflows/'$WORKFLOW_FILE'/dispatches \
+              -d "{\"ref\":\"main\"}"
+          '
